@@ -11,17 +11,13 @@ def loss_f(output, target):
     return loss
 
 
-def generate_y(teacher_net, X):
-    return teacher_net(X)
-
-
-def train(model, loss_fn, optimizer, point_sampler, traget, teacher_net):
+def train(model, loss_fn, optimizer, point_sampler, teacher_net):
     model.train()
     for i in range(NUMBER_OF_ITERATIONS):
         X = point_sampler()
         # Compute prediction error
         pred = model(X)
-        y = traget(teacher_net, X)
+        y = teacher_net(X)
         loss = loss_fn(pred, y)
 
         # Backpropagation
@@ -34,6 +30,9 @@ def train(model, loss_fn, optimizer, point_sampler, traget, teacher_net):
 
 
 def point_sampler():
+    """
+    :return: sampled data
+    """
     return torch.normal(torch.zeros(d), torch.ones(d))
 
 
@@ -43,5 +42,5 @@ if __name__ == '__main__':
     optimizer = torch.optim.SGD(student_net.parameters(), lr=1e-3)
 
     teacher_net = model.generate_teacher_model_normal(d)
-    train(student_net, loss_f, optimizer, point_sampler, generate_y,
+    train(student_net, loss_f, optimizer, point_sampler,
           teacher_net)
