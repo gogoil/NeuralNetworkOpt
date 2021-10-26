@@ -1,5 +1,6 @@
 import torch
 import model
+import GDoptimizer
 
 d = 10
 
@@ -39,8 +40,33 @@ def point_sampler():
 if __name__ == '__main__':
     student_net = model.TwoLayerNeuralNetwork(d)
 
-    optimizer = torch.optim.SGD(student_net.parameters(), lr=1e-3)
+    optimizer = torch.optim.SGD(student_net.parameters(), lr=1e-2)
 
-    teacher_net = model.generate_teacher_model_normal(d)
-    train(student_net, loss_f, optimizer, point_sampler,
-          teacher_net)
+    teacher_net = model.generate_teacher_model_Id(d)
+
+    opt = GDoptimizer.GradientCalculator(teacher_net.linearLayer.weight, d)
+    w = GDoptimizer.gradient_descent(student_net.linearLayer.weight,
+                                     grad_calc=opt, num_of_steps=1000, lr=1e-2)
+    loss = loss_f(w, teacher_net.linearLayer.weight)
+    print(f"loss {loss}")
+    # grad = opt.get_grad(student_net.linearLayer.weight)
+    # print(f"grad is {grad}")
+    # print(torch.norm(grad))
+    #
+    # print("student")
+    # print(student_net.linearLayer.weight)
+    # print("teacher")
+    # print(teacher_net.linearLayer.weight)
+
+    # train(student_net, loss_f, optimizer, point_sampler,
+    #       teacher_net)
+    #
+    # grad = opt.get_grad(student_net.linearLayer.weight)
+    # print(f"grad is {grad}")
+    # print(torch.norm(grad))
+    #
+    # print("student")
+    # print(student_net.linearLayer.weight)
+    # print("teacher")
+    # print(teacher_net.linearLayer.weight)
+    #
