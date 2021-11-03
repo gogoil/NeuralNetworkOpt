@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 
-
 class TwoLayerNeuralNetwork(nn.Module):
     """
     netwrok with single dXd layer and relu layer

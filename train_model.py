@@ -1,13 +1,20 @@
+import matplotlib.pyplot as plt
 import torch
 import model
 import GDoptimizer
+import numpy as np
 
 d = 10
-
+lr = 1e-2
 NUMBER_OF_ITERATIONS = 1000
 
 
+def normalize(mat):
+    return mat / torch.linalg.norm(mat)
+
+
 def loss_f(output, target):
+    """squared loss"""
     loss = torch.sum((output - target) ** 2)
     return loss
 
@@ -30,6 +37,16 @@ def train(model, loss_fn, optimizer, point_sampler, teacher_net):
         print(f"loss: {loss:>7f} in iteration {i}")
 
 
+def plot_lost(w, v):
+    loss = np.zeros(NUMBER_OF_ITERATIONS)
+    for i in range(NUMBER_OF_ITERATIONS):
+        loss[i] = loss_f(w[i], v)
+    plt.plot(loss)
+    plt.ylabel("loss")
+    plt.xlabel("iteration number")
+    plt.show()
+
+
 def point_sampler():
     """
     :return: sampled data
@@ -39,34 +56,23 @@ def point_sampler():
 
 if __name__ == '__main__':
     student_net = model.TwoLayerNeuralNetwork(d)
-
-    optimizer = torch.optim.SGD(student_net.parameters(), lr=1e-2)
-
-    teacher_net = model.generate_teacher_model_Id(d)
+    teacher_net = model.generate_teacher_model_normal(d)
 
     opt = GDoptimizer.GradientCalculator(teacher_net.linearLayer.weight, d)
-    w = GDoptimizer.gradient_descent(student_net.linearLayer.weight,
-                                     grad_calc=opt, num_of_steps=1000, lr=1e-2)
+    path_list = GDoptimizer.gradient_descent(student_net.linearLayer.weight,
+                                            d=d,
+                                     grad_calc=opt,
+                                     num_of_steps=NUMBER_OF_ITERATIONS,
+                                     lr=lr)
+    plot_lost(path_list, teacher_net.linearLayer.weight)
+    w = path_list[NUMBER_OF_ITERATIONS - 1, :, :]
     loss = loss_f(w, teacher_net.linearLayer.weight)
     print(f"loss {loss}")
-    # grad = opt.get_grad(student_net.linearLayer.weight)
-    # print(f"grad is {grad}")
-    # print(torch.norm(grad))
-    #
-    # print("student")
-    # print(student_net.linearLayer.weight)
-    # print("teacher")
-    # print(teacher_net.linearLayer.weight)
+    print(f"w matrix\n{w}")
+    print(f"w matrix normalized\n{normalize(w)}")
 
-    # train(student_net, loss_f, optimizer, point_sampler,
-    #       teacher_net)
-    #
-    # grad = opt.get_grad(student_net.linearLayer.weight)
-    # print(f"grad is {grad}")
-    # print(torch.norm(grad))
-    #
-    # print("student")
-    # print(student_net.linearLayer.weight)
-    # print("teacher")
-    # print(teacher_net.linearLayer.weight)
-    #
+    with open("matrix_minima.txt", "a") as f:
+        f.write(f"loss {loss}\n")
+        f.write(f"w matrix\n{w}\n")
+        f.write(f"w matrix normalized\n{normalize(w)}\n")
+        f.close()
