@@ -3,16 +3,17 @@ import numpy as np
 import model
 from scipy.optimize import approx_fprime
 
+d = 10
 one_over_2_pi = 1 / (2 * np.pi)
 
 
-def get_theta(w, w_norm, v, v_norm):
+def get_theta(w, w_norm, v, v_norm):  # TODO not working with norm 0
     angle = (w.T @ v) / (v_norm * w_norm)
     angle = np.clip(angle, -1, 1)
     return np.arccos(angle)
 
 
-def g(w, v):
+def g(w, v=torch.ones(d)):
     """subroutine for calc gradient"""
     w_norm = torch.linalg.norm(w)
     v_norm = torch.linalg.norm(v)
@@ -22,7 +23,7 @@ def g(w, v):
     return one_over_2_pi * (element_a + element_b)
 
 
-def f(w, v):
+def f(w, v=torch.ones(d)):
     """subroutine for calc target function"""
     w_norm = torch.linalg.norm(w)
     v_norm = torch.linalg.norm(v)
@@ -31,6 +32,23 @@ def f(w, v):
     element_b = np.sin(theta)
     element_c = (np.pi - theta) * np.cos(theta)
     return element_a * (element_b + element_c)
+
+
+def build_f_subroutine(w, v=torch.eye(d)):
+    ans = 0
+    for i in range(d):
+        for j in range(d):
+            ans += f(w[i], v[j])
+    return ans
+
+
+def build_g_subroutine(w, v=torch.eye(d)):
+    ans = torch.zeros(d**2)
+    for i in range(1,d+1):
+        for j in range(1,d+1):
+            a = g(w[i-1], v[j-1])
+            ans[d*(i-1):d*i] += a
+    return ans
 
 
 class GradientCalculator:

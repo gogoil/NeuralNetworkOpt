@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import torch
-import model
-import GDoptimizer
+
 import numpy as np
+import calc_f_g_numpy_only as np_calc
 
 d = 10
 lr = 1e-2
@@ -15,7 +15,7 @@ def normalize(mat):
 
 def loss_f(output, target):
     """squared loss"""
-    loss = torch.sum((output - target) ** 2)
+    loss = np.sum((output - target) ** 2)
     return loss
 
 
@@ -47,6 +47,13 @@ def plot_lost(w, v):
     plt.show()
 
 
+def plot_grad_norm(grad_norm_list):
+    plt.plot(grad_norm_list)
+    plt.ylabel("gradient norm")
+    plt.xlabel("iteration number")
+    plt.show()
+
+
 def point_sampler():
     """
     :return: sampled data
@@ -55,24 +62,27 @@ def point_sampler():
 
 
 if __name__ == '__main__':
-    student_net = model.TwoLayerNeuralNetwork(d)
-    teacher_net = model.generate_teacher_model_normal(d)
+    student_net = np.random.normal(0, 1, (d, d))
 
-    opt = GDoptimizer.GradientCalculator(teacher_net.linearLayer.weight, d)
-    path_list = GDoptimizer.gradient_descent(student_net.linearLayer.weight,
-                                            d=d,
-                                     grad_calc=opt,
-                                     num_of_steps=NUMBER_OF_ITERATIONS,
-                                     lr=lr)
-    plot_lost(path_list, teacher_net.linearLayer.weight)
+    teacher_net = np.eye(d)
+
+    opt = np_calc.GradientCalculator(teacher_net, d)  # init gradient
+    # calculator object
+    path_list, gradient_norm_list = np_calc.gradient_descent(student_net,
+                                                             d=d,
+                                                             grad_calc=opt,
+                                                             num_of_steps=NUMBER_OF_ITERATIONS,
+                                                             lr=lr)
+    plot_lost(path_list, teacher_net)
+    plot_grad_norm(gradient_norm_list)
     w = path_list[NUMBER_OF_ITERATIONS - 1, :, :]
-    loss = loss_f(w, teacher_net.linearLayer.weight)
+    loss = loss_f(w, teacher_net)
     print(f"loss {loss}")
     print(f"w matrix\n{w}")
-    print(f"w matrix normalized\n{normalize(w)}")
+    # print(f"w matrix normalized\n{normalize(w)}")
 
-    with open("matrix_minima.txt", "a") as f:
-        f.write(f"loss {loss}\n")
-        f.write(f"w matrix\n{w}\n")
-        f.write(f"w matrix normalized\n{normalize(w)}\n")
-        f.close()
+    # with open("matrix_minima.txt", "a") as f:
+    #     f.write(f"loss {loss}\n")
+    #     f.write(f"w matrix\n{w}\n")
+    #     # f.write(f"w matrix normalized\n{normalize(w)}\n")
+    #     f.close()
