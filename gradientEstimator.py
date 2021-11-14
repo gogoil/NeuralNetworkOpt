@@ -9,8 +9,6 @@ import numpy as np
 
 d = 10
 
-NUMBER_OF_ITERATIONS = 1e4
-
 
 def test_gradient_of_subroutine_f_and_g_numpy_version():
     w = np.random.normal(0, 1, d)

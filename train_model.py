@@ -6,7 +6,7 @@ import calc_f_g_numpy_only as np_calc
 
 d = 10
 lr = 1e-2
-NUMBER_OF_ITERATIONS = 1000
+NUMBER_OF_ITERATIONS = 10000
 
 
 def normalize(mat):
@@ -15,8 +15,7 @@ def normalize(mat):
 
 def loss_f(output, target):
     """squared loss"""
-    loss = np.sum((output - target) ** 2)
-    return loss
+    return np.sum((output - target) ** 2)
 
 
 def train(model, loss_fn, optimizer, point_sampler, teacher_net):
@@ -47,6 +46,21 @@ def plot_lost(w, v):
     plt.show()
 
 
+def plot_target_function(w, grad_calc):
+    f_x = np.zeros(NUMBER_OF_ITERATIONS)
+    for i in range(NUMBER_OF_ITERATIONS):
+        f_x[i] = grad_calc.target_function(w[i])
+    plt.plot(f_x)
+    plt.ylabel("target function")
+    plt.xlabel("iteration number")
+    plt.show()
+    for i in range(NUMBER_OF_ITERATIONS):
+        if i % 100 == 0:
+            print(f"i is {i} and loss{f_x[i]}")
+    print(f"last {f_x[-1]}")
+
+
+
 def plot_grad_norm(grad_norm_list):
     plt.plot(grad_norm_list)
     plt.ylabel("gradient norm")
@@ -73,12 +87,13 @@ if __name__ == '__main__':
                                                              grad_calc=opt,
                                                              num_of_steps=NUMBER_OF_ITERATIONS,
                                                              lr=lr)
-    plot_lost(path_list, teacher_net)
-    plot_grad_norm(gradient_norm_list)
-    w = path_list[NUMBER_OF_ITERATIONS - 1, :, :]
-    loss = loss_f(w, teacher_net)
-    print(f"loss {loss}")
-    print(f"w matrix\n{w}")
+    # plot_lost(path_list, teacher_net)
+    # plot_grad_norm(gradient_norm_list)
+    plot_target_function(path_list, opt)
+    # w = path_list[NUMBER_OF_ITERATIONS - 1, :, :]
+    # loss = loss_f(w, teacher_net)
+    # print(f"loss {loss}")
+    # print(f"w matrix\n{w}")
     # print(f"w matrix normalized\n{normalize(w)}")
 
     # with open("matrix_minima.txt", "a") as f:

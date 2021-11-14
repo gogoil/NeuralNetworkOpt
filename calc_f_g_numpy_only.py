@@ -1,4 +1,5 @@
 import numpy as np
+from gradientEstimator import differential
 
 one_over_2pi = 1 / (2 * np.pi)
 d = 10
@@ -74,8 +75,10 @@ def gradient_descent(x0, num_of_steps, grad_calc, d, lr=1e-2):
     for i in range(num_of_steps):
         prev_x0 = cur_x0
         grad = grad_calc.gradient(prev_x0)
+        # grad = differential(f=lambda x: [grad_calc.target_function(
+        #     x.reshape(d, d))],x0=prev_x0)[0]
         # print(f"{i} grad norm is {np.linalg.norm(grad)}")
         cur_x0 += -(lr * grad)
         path_list[i] = cur_x0
         gradient_norm_list[i] = np.linalg.norm(grad)
-    return path_list , gradient_norm_list
+    return path_list, gradient_norm_list
