@@ -6,7 +6,7 @@ import calc_f_g_numpy_only as np_calc
 
 d = 10
 lr = 1e-2
-NUMBER_OF_ITERATIONS = 10000
+NUMBER_OF_ITERATIONS = 1000
 
 
 def normalize(mat):
@@ -36,7 +36,7 @@ def train(model, loss_fn, optimizer, point_sampler, teacher_net):
         print(f"loss: {loss:>7f} in iteration {i}")
 
 
-def plot_lost(w, v):
+def plot_lost(w: np.ndarray, v: np.ndarray):
     loss = np.zeros(NUMBER_OF_ITERATIONS)
     for i in range(NUMBER_OF_ITERATIONS):
         loss[i] = loss_f(w[i], v)
@@ -46,7 +46,7 @@ def plot_lost(w, v):
     plt.show()
 
 
-def plot_target_function(w, grad_calc):
+def plot_target_function(w: np.ndarray, grad_calc: np_calc.GradientCalculator):
     f_x = np.zeros(NUMBER_OF_ITERATIONS)
     for i in range(NUMBER_OF_ITERATIONS):
         f_x[i] = grad_calc.target_function(w[i])
@@ -60,8 +60,7 @@ def plot_target_function(w, grad_calc):
     print(f"last {f_x[-1]}")
 
 
-
-def plot_grad_norm(grad_norm_list):
+def plot_grad_norm(grad_norm_list: np.ndarray):
     plt.plot(grad_norm_list)
     plt.ylabel("gradient norm")
     plt.xlabel("iteration number")
@@ -75,7 +74,7 @@ def point_sampler():
     return torch.normal(torch.zeros(d), torch.ones(d))
 
 
-if __name__ == '__main__':
+def main():
     student_net = np.random.normal(0, 1, (d, d))
 
     teacher_net = np.eye(d)
@@ -101,3 +100,7 @@ if __name__ == '__main__':
     #     f.write(f"w matrix\n{w}\n")
     #     # f.write(f"w matrix normalized\n{normalize(w)}\n")
     #     f.close()
+
+
+if __name__ == '__main__':
+    main()
